@@ -1,4 +1,31 @@
-body {
+html, body {
     margin: 0px;
     overflow: hidden;
+    height: 100%;
+}
+
+.map_box {
+    height: 100%;
+    /* background-color: #b1c9f0; */
+}
+
+.map {
+    height:100%;
+    width: 100%;
+    background-color: #dce7fa;
+}
+/* 
+path {
+    fill: blue;
+} */
+
+.country {
+    fill: #a6c4f5;
+    stroke: white;
+    stroke-width: 0.05px;
+}
+  
+.country:hover {
+    fill: #397ded;
+    cursor: pointer;
 }
