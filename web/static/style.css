@@ -4,6 +4,8 @@ html, body {
     height: 100%;
 }
 
+
+/* 主页 */
 .map_box {
     height: 100%;
     /* background-color: #b1c9f0; */
@@ -14,10 +16,6 @@ html, body {
     width: 100%;
     background-color: #dce7fa;
 }
-/* 
-path {
-    fill: blue;
-} */
 
 .country {
     fill: #a6c4f5;
@@ -28,4 +26,27 @@ path {
 .country:hover {
     fill: #397ded;
     cursor: pointer;
+}
+
+
+/* 地区页面 */
+.tree_box {
+    height: 100%;
+    /* background-color: #b1c9f0; */
+}
+
+.tree {
+    height:100%;
+    width: 100%;
+    background-color: #dce7fa;
+}
+
+path {
+    fill: None;
+    stroke: #397ded;
+}
+
+circle {
+    fill: white;
+    stroke: #397ded;
 }

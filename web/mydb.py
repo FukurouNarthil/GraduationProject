@@ -51,22 +51,22 @@ def formDictWriters(w):
 
 def formDictGenres(g, w):
   genre = {}
-  genre['genre'] = g
-  genre['writers'] = w
+  genre['genre'] = { 'name': g }
+  genre['children'] = w
   return genre
 
 
 def formDictPeriods(p, g):
   period = {}
-  period['period'] = p
-  period['genres'] = g
+  period['period'] = {'name': p }
+  period['children'] = g
   return period
 
 
 def formDictRegion(r, p):
   region = {}
-  region['region'] = r
-  region['periods'] = p
+  region['region'] = {'name': r }
+  region['children'] = p
   return region
 
 
@@ -88,13 +88,14 @@ def sortData(r, d):
       genres_dicts.append(formDictGenres(j, writers_dicts))
     periods_dicts.append(formDictPeriods(i, genres_dicts))
     data = formDictRegion(r, periods_dicts)
-    print(json.dumps(data, ensure_ascii=False))
+    # print(json.dumps(data, ensure_ascii=False))
   return data
 
 
 def readData(r):
   sql = "SELECT period, genre, writer, tags, works FROM regions \
       WHERE region = %s"
+  print(r)
   mycursor.execute(sql, (r,))
   data = mycursor.fetchall()
   sorted_data = sortData(r, data)

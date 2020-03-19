@@ -1,8 +1,12 @@
+# encoding=utf-8
+
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 from translator import translate
 import mydb
+import json
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 
 @app.route('/home')
@@ -10,17 +14,15 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/region')
-def region():
-    return render_template('region.html')
-
-
-@app.route('/region/<region>')
+@app.route('/region/<region>', methods=['GET'])
 def getRegionData(region):
     ch_region = translate(region)
-    print(ch_region)
-
-    return render_template('region.html')
+    data = mydb.readData(ch_region)
+    print('hello')
+    data = json.dumps(data, ensure_ascii=False)
+    # return jsonify(dict(region=region, data=data))
+    return render_template('region.html', region=region, data=data)
+    # return data
 
 
 @app.route('/')

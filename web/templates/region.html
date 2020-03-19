@@ -1,9 +1,85 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Region Literature</title>
-    </head>
-    <body>
-        <div></div>
-    </body>
+
+<head>
+    <title>{{ region }} Literature</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+    <div class="tree_box">
+        <svg class="tree">
+
+        </svg>
+        <!-- <script src="../static/home.js"></script> -->
+    </div>
+    <script src="../static/d3.js"></script>
+    <script src="../static/d3.min.js"></script>
+    <script src="../static/topojson.min.js"></script>
+    <script src="../static/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript">
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
+
+        const svg = d3.select('svg')
+            .attr("height", height)
+            .attr("width", width);
+
+        const htree = d3.tree()
+            .size([height, width / 1.5]);
+
+        var data = '{{ data }}';
+        data = data.split("&#34").join("\"");
+        data = data.split(";").join("");
+        // console.log(data);
+        const json_data = JSON.parse(data)
+        // console.log(json_data)
+
+        console.log('hello')
+        const root = d3.hierarchy(json_data);
+        const links = htree(root).links();
+        const linkPathGenerator = d3.linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x);
+
+        svg.selectAll('path').data(links)
+            .enter().append('path')
+            .attr('d', linkPathGenerator);
+
+        var node = svg.selectAll('text').data(root.descendants())
+            .enter().append('g')
+                .attr('class', function(d) { return "node" + (d.children ? " node--internal" : "node--leaf"); })
+                // .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+        console.log(node)
+
+        node.append('circle')
+            .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+            .attr("r", 2.5)
+
+        node.append('text')
+            .attr('x', d => d.y)
+            .attr('y', d => d.x)
+            .attr('dy', 3)
+            .text(d => {
+                // console.log(d)
+                if (!d.depth) {
+                    // console.log(d.data)
+                    return d.data.region.name
+                }
+                else if (d.depth === 1) {
+                    return d.data.period.name
+                }
+                else if (d.depth === 2) {
+                    return d.data.genre.name
+                }
+                else if (d.depth === 3) {
+                    return d.data.name
+                }
+            });
+        
+
+    </script>
+    <!-- <script src="../static/region.js"></script> -->
+</body>
+
 </html>
