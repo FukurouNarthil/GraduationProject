@@ -8,9 +8,6 @@
 
 <body>
     <div class="tree_box">
-        <svg class="tree">
-
-        </svg>
         <!-- <script src="../static/home.js"></script> -->
     </div>
     <script src="../static/d3.js"></script>
@@ -18,15 +15,20 @@
     <script src="../static/topojson.min.js"></script>
     <script src="../static/jquery-3.4.1.min.js"></script>
     <script type="text/javascript">
-        const width = document.body.clientWidth;
-        const height = document.body.clientHeight;
+        var margin = { top: 20, right: 90, bottom: 30, left: 90 },
+            width = 1536 - margin.left - margin.right,
+            height = 721 - margin.top - margin.bottom;
 
-        const svg = d3.select('svg')
-            .attr("height", height)
-            .attr("width", width);
+        const svg = d3.select('.tree_box').append('svg')
+                        .attr("class", "tree")
+                        .attr("height", height + margin.top + margin.bottom)
+                        .attr("width", width + margin.right + margin.left)
+                    .append('g')
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
 
         const htree = d3.tree()
-            .size([height, width / 1.5]);
+            .size([height, width]);
 
         var data = '{{ data }}';
         data = data.split("&#34").join("\"");
@@ -35,48 +37,198 @@
         const json_data = JSON.parse(data)
         // console.log(json_data)
 
-        console.log('hello')
-        const root = d3.hierarchy(json_data);
-        const links = htree(root).links();
-        const linkPathGenerator = d3.linkHorizontal()
-            .x(d => d.y)
-            .y(d => d.x);
+        var root = d3.hierarchy(json_data, function(d) { return d.children; });
+        root.x0 = height / 2;
+        root.y0 = 0;
+        var i = 0;
+        var links = htree(root).links();
+        var duration = 750;
+        // const linkPathGenerator = d3.linkHorizontal()
+        //     .x(d => d.y)
+        //     .y(d => d.x);
 
-        svg.selectAll('path').data(links)
-            .enter().append('path')
-            .attr('d', linkPathGenerator);
+        // svg.selectAll('path').data(links)
+        //     .enter().append('path')
+        //     .attr('d', linkPathGenerator);
 
-        var node = svg.selectAll('text').data(root.descendants())
-            .enter().append('g')
-                .attr('class', function(d) { return "node" + (d.children ? " node--internal" : "node--leaf"); })
-                // .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-        console.log(node)
+        // var node = svg.selectAll('text').data(root.descendants())
+        //     .enter().append('g')
+        //     .attr('class', function (d) { return "node" + (d.children ? " node--internal" : "node--leaf"); })
+        // // .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+        // console.log(node)
 
-        node.append('circle')
-            .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; })
-            .attr("r", 2.5)
+        // node.append('circle')
+        //     .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+        //     .attr("r", 2.5)
 
-        node.append('text')
-            .attr('x', d => d.y)
-            .attr('y', d => d.x)
-            .attr('dy', 3)
-            .text(d => {
-                // console.log(d)
-                if (!d.depth) {
-                    // console.log(d.data)
-                    return d.data.region.name
-                }
-                else if (d.depth === 1) {
-                    return d.data.period.name
-                }
-                else if (d.depth === 2) {
-                    return d.data.genre.name
-                }
-                else if (d.depth === 3) {
-                    return d.data.name
-                }
+        // 显示结点数据
+        // node.append('text')
+        //     .attr('x', d => d.y)
+        //     .attr('y', d => d.x)
+        //     .attr('dy', 3)
+        //     .text(d => {
+        //         // console.log(d)
+        //         if (!d.depth) {
+        //             // console.log(d.data)
+        //             return d.data.region.name
+        //         }
+        //         else if (d.depth === 1) {
+        //             return d.data.period.name
+        //         }
+        //         else if (d.depth === 2) {
+        //             return d.data.genre.name
+        //         }
+        //         else if (d.depth === 3) {
+        //             return d.data.name
+        //         }
+        //     });
+
+        // 结点收缩
+        root.children.forEach(collapse);
+        update(root)
+
+        function collapse(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            }
+        }
+
+        function update(source) {
+            var treeData = htree(root);
+
+            var nodes = treeData.descendants(),
+                links = treeData.descendants().slice(1);
+
+            nodes.forEach(function (d) { d.y = d.depth * 180; });
+
+            // ****************** Nodes section ***************************
+
+            var node = svg.selectAll('g.node')
+                .data(nodes, function (d) { return d.id || (d.id = ++i); });
+
+            var nodeEnter = node.enter().append('g')
+                .attr('class', 'node')
+                .attr('transform', function (d) {
+                    return "translate(" + source.y0 + "," + source.x0 + ")";
+                })
+                .on('click', click);
+
+            // 给结点画圈
+            nodeEnter.append('circle')
+                .attr('class', 'node')
+                .attr('r', 1e-6)
+                .style('fill', function (d) {
+                    return d._children ? "#a6c4f5" : "white";
+                })
+
+            // 给结点加标签
+            nodeEnter.append('text')
+                .attr('dy', '.35em')
+                .attr('x', function (d) {
+                    return d.children || d._children ? -13 : 13;
+                })
+                .attr('text-anchor', function (d) {
+                    return d.children || d._children ? "end" : "start"
+                })
+                .text(function (d) {
+                    if (!d.depth) {
+                        // console.log(d.data)
+                        return d.data.region.name
+                    }
+                    else if (d.depth === 1) {
+                        return d.data.period.name
+                    }
+                    else if (d.depth === 2) {
+                        return d.data.genre.name
+                    }
+                    else if (d.depth === 3) {
+                        return d.data.name
+                    }
+                });
+
+            // update
+            var nodeUpdate = nodeEnter.merge(node);
+
+            nodeUpdate.transition()
+                .duration(duration)
+                .attr('transform', function (d) {
+                    return "translate(" + d.y + "," + d.x + ")";
+                });
+
+            nodeUpdate.select('circle.node')
+                .attr('r', 10)
+                .style('fill', function (d) {
+                    return d._children ? "#a6c4f5" : "white";
+                })
+                .attr('cursor', 'pointer');
+
+            // 移除结点
+            var nodeExit = node.exit().transition()
+                .duration(duration)
+                .attr("transform", function (d) {
+                    return "translate(" + source.y + "," + source.x + ")";
+                })
+                .remove();
+
+            nodeExit.select('circle')
+                .attr('r', 1e-6);
+
+            nodeExit.select('text')
+                .style('fill-opacity', 1e-6)
+
+
+            // 更新links
+            var link = svg.selectAll('path.link')
+                .data(links, function (d) { return d.id; });
+
+            var linkEnter = link.enter().insert('path', 'g')
+                .attr('class', 'link')
+                .attr('d', function (d) {
+                    var o = { x: source.x0, y: source.y0 };
+                    return diagonal(o, o);
+                });
+
+            // update
+            var linkUpdate = linkEnter.merge(link);
+
+            linkUpdate.transition()
+                .duration(duration)
+                .attr('d', function (d) { return diagonal(d, d.parent) });
+
+            var linkExit = link.exit().transition()
+                .duration(duration)
+                .attr('d', function (d) {
+                    var o = { x: source.x, y: source.y };
+                    return diagonal(o, o);
+                })
+                .remove();
+
+            nodes.forEach(function (d) {
+                d.x0 = d.x;
+                d.y0 = d.y;
             });
-        
+
+            function diagonal(s, d) {
+                path = `M ${s.y} ${s.x}
+                        C ${(s.y + d.y) / 2} ${s.x},
+                          ${(s.y + d.y) / 2} ${d.x},
+                          ${d.y} ${d.x}`
+                return path
+            }
+
+            function click(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                update(d)
+            }
+        }
 
     </script>
     <!-- <script src="../static/region.js"></script> -->
