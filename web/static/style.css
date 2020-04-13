@@ -2,6 +2,7 @@ html, body {
     margin: 0px;
     overflow: hidden;
     height: 100%;
+    background-color: #dce7fa;
 }
 
 
@@ -33,6 +34,7 @@ html, body {
 .tree_box {
     height: 100%;
     /* background-color: #b1c9f0; */
+    background-color: #D8E3EC;
 }
 
 .tree {
@@ -41,12 +43,19 @@ html, body {
     background-color: #dce7fa;
 }
 
-path {
+/* path {
+    fill: None;
+    stroke: #397ded;
+} */
+.line {
     fill: None;
     stroke: #397ded;
 }
 
-circle {
-    fill: white;
-    stroke: #397ded;
+.node_region {
+    /* fill: white; */
+}
+
+.node_period {
+    /* fill: white; */
 }

@@ -2,6 +2,7 @@
 
 import mysql.connector
 import json
+import random
 
 mydb = mysql.connector.connect(
   host="localhost",       # 数据库主机地址
@@ -17,8 +18,10 @@ mycursor = mydb.cursor()
 def getPeriods(d):
   periods = []
   for i in d:
-    if i[0] not in periods:
-      periods.append(i[0])
+    # if i[0] not in periods:
+      # periods.append(i[0])
+    if {'name': i[0]} not in periods:
+      periods.append({'name': i[0]})
   return periods
 
 
@@ -51,58 +54,86 @@ def formDictWriters(w):
 
 def formDictGenres(g, w):
   genre = {}
-  genre['genre'] = { 'name': g }
+  genre['name'] = g
   genre['children'] = w
   return genre
 
 
 def formDictPeriods(p, g):
   period = {}
-  period['period'] = {'name': p }
+  period['name'] = p
   period['children'] = g
   return period
 
 
 def formDictRegion(r, p):
   region = {}
-  region['region'] = {'name': r }
+  # region['region'] = {'name': r }
+  region['name'] = r
   region['children'] = p
   return region
 
 
 # 调用各种函数整理数据
-def sortData(r, d):
+def sortPeriodData(r, d):
   periods = getPeriods(d)
   data = {}
-  periods_dicts = []
-  for i in periods:
-    genres = getGenres(r, i)
-    genres_dicts = []
-    for j in genres:
-      writers = getWriters(r, i , j)
-      writers_dicts = []
-      # print(writers)
-      # 构造要被json化的字典
-      for k in writers:
-        writers_dicts.append(formDictWriters(k))
-      genres_dicts.append(formDictGenres(j, writers_dicts))
-    periods_dicts.append(formDictPeriods(i, genres_dicts))
-    data = formDictRegion(r, periods_dicts)
+  # periods_dicts = []
+  # for i in periods:
+  #   genres = getGenres(r, i)
+  #   genres_dicts = []
+  #   for j in genres:
+  #     writers = getWriters(r, i , j)
+  #     writers_dicts = []
+  #     # print(writers)
+  #     # 构造要被json化的字典
+  #     for k in writers:
+  #       writers_dicts.append(formDictWriters(k))
+  #     genres_dicts.append(formDictGenres(j, writers_dicts))
+  #   periods_dicts.append(formDictPeriods(i, genres_dicts))
+  #   data = formDictRegion(r, periods_dicts)
     # print(json.dumps(data, ensure_ascii=False))
+  data = formDictRegion(r, periods)
   return data
 
 
-def readData(r):
+def sortGenreData(r, p, g):
+  data = {}
+  genres_dicts = []
+  for j in g:
+    writers = getWriters(r, p , j)
+    writers_dicts = []
+    # print(writers)
+    # 构造要被json化的字典
+    for k in writers:
+      writers_dicts.append(formDictWriters(k))
+    genres_dicts.append(formDictGenres(j, writers_dicts))
+  data = formDictPeriods(p, genres_dicts)
+  # print(data)
+  return data
+
+
+def readPeriodData(r):
   sql = "SELECT period, genre, writer, tags, works FROM regions \
       WHERE region = %s"
   print(r)
   mycursor.execute(sql, (r,))
   data = mycursor.fetchall()
-  sorted_data = sortData(r, data)
-  mydb.close()
+  sorted_data = sortPeriodData(r, data)
+  # mydb.close()
   return sorted_data
 
 
+def readGenreData(r, p):
+  genres = getGenres(r, p)
+  sorted_data = sortGenreData(r, p, genres)
+  return sorted_data
+
+
+def closeDatabase():
+  mydb.close()
+
+
 if __name__ == "__main__":
-  data = readData("日本")
+  data = readPeriodData("日本")
   print(data)

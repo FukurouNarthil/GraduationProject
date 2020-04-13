@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ region }} Literature</title>
+        <link rel="stylesheet" href="../../static/style.css">
+        <script src="../../static/d3.js"></script>
+        <script src="../../static/d3.min.js"></script>
+        <script src="../../static/topojson.min.js"></script>
+        <script src="../../static/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <div class="tree_box">
+            
+        </div>
+        <script type="text/javascript">
+            var margin = { top: 20, right: 90, bottom: 30, left: 90 },
+                width = 1536 - margin.left - margin.right,
+                height = 721 - margin.top - margin.bottom;
+            var radius = 200;
+
+            const svg = d3.select('.tree_box').append('svg')
+                            .attr("class", "tree")
+                            .attr("height", height + margin.top + margin.bottom)
+                            .attr("width", width + margin.right + margin.left)
+            var g = svg.append('g')
+                            .attr("transform", "translate(" + (width / 2 + 70) + "," + (height / 2 + 40) + ")");
+        </script>
+    </body>
+</html>
