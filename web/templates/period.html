@@ -1,29 +1,180 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>{{ region }} Literature</title>
-        <link rel="stylesheet" href="../../static/style.css">
-        <script src="../../static/d3.js"></script>
-        <script src="../../static/d3.min.js"></script>
-        <script src="../../static/topojson.min.js"></script>
-        <script src="../../static/jquery-3.4.1.min.js"></script>
-    </head>
-    <body>
-        <div class="tree_box">
-            
-        </div>
-        <script type="text/javascript">
-            var margin = { top: 20, right: 90, bottom: 30, left: 90 },
-                width = 1536 - margin.left - margin.right,
-                height = 721 - margin.top - margin.bottom;
-            var radius = 200;
 
-            const svg = d3.select('.tree_box').append('svg')
-                            .attr("class", "tree")
-                            .attr("height", height + margin.top + margin.bottom)
-                            .attr("width", width + margin.right + margin.left)
-            var g = svg.append('g')
-                            .attr("transform", "translate(" + (width / 2 + 70) + "," + (height / 2 + 40) + ")");
-        </script>
-    </body>
+<head>
+    <title>{{ region }} Literature</title>
+    <link rel="stylesheet" href="../../static/style.css">
+    <script src="../../static/d3.js"></script>
+    <script src="../../static/d3.min.js"></script>
+    <script src="../../static/topojson.min.js"></script>
+    <script src="../../static/jquery-3.4.1.min.js"></script>
+</head>
+
+<body>
+    <div class="tree_box">
+
+    </div>
+    <script type="text/javascript">
+        var margin = { top: 20, right: 90, bottom: 30, left: 90 },
+            width = 1536 - margin.left - margin.right,
+            height = 721 - margin.top - margin.bottom;
+        var radius = 200;
+        var i = 0;
+
+        const svg = d3.select('.tree_box').append('svg')
+            .attr("class", "tree")
+            .attr("height", height)
+            .attr("width", width)
+        var g = svg.append('g')
+            .attr("transform", "translate(150, 0)");
+
+        const ptree = d3.tree()
+            .size([height, width * 0.5]);
+
+        var data = '{{ data }}';
+        data = data.split("&#34").join("\"");
+        data = data.split(";").join("");
+        // console.log(data);
+        const json_data = JSON.parse(data);
+        console.log(json_data);
+
+        var root = d3.hierarchy(json_data);
+        const linkPathGenerator = d3.linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x);
+        
+        g.selectAll('path').data(ptree(root).links())
+            .enter().append('path')
+            .attr("class", "link")
+                .attr('fill', 'none')
+                .attr("stroke", "#3B7D99")
+                .attr('stroke-width', '2px')
+                .style("stroke-dasharray", ("5, 5"))
+            .attr('d', linkPathGenerator);
+
+        var node = g.selectAll('node').data(root.descendants())
+            .enter().append('g')
+            .attr('class', function (d) {
+                var name;
+                switch(d.depth) {
+                    case 0:
+                        name = 'root';
+                        break;
+                    case 1:
+                        name = 'genre';
+                        break;
+                    case 2:
+                        name = 'writer';
+                        break;
+                }
+                return "node" + " node--" + name; 
+            })
+        // .attr('transform', function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+        console.log(node)
+
+        // node.append('circle')
+        //     .attr('transform', function (d) { return "translate(" + d.y + "," + d.x + ")"; });
+        g.selectAll('.node--root').append('circle')
+            .attr('transform', function (d) { return "translate(" + d.y + "," + d.x + ")"; })
+            .attr('r', '2.5');
+        g.selectAll('.node--genre').append('image')
+            .attr('xlink:href', d => {
+                var name;
+                switch(d.data.name) {
+                    case '诗歌' || '赋' || '散曲':
+                        name = 'poetry';
+                        break;
+                    case '小说' || '词':
+                        name = 'fic';
+                        break;
+                    case '戏剧':
+                        name = 'drama';
+                        break;
+                    case '非虚构' || '散文':
+                        name = 'nonfic';
+                        break;
+                }
+                return '../../static/' + name + '.png';
+            })
+            .attr('transform', function (d) { 
+                y = d.x - 43;
+                return "translate(" + d.y + "," + y + ")"; 
+            });
+
+
+        var writer = g.selectAll('.node--writer').append('g')
+            .attr('transform', function (d) { return "translate(" + d.y + "," + d.x + ")"; })
+            .attr('class', 'writer');
+        // node颜色渐变
+        var myColor = d3.scaleLinear().domain([1, 10])
+                            .range(["#9ABCCA", "#467178"]);
+
+        var writer_name = writer.append('g')
+            .attr('class', 'writer_name')
+        writer_name.append('rect')
+                .attr('height', '28')
+                .attr('width', d => { return d.data.name.length * 13 + 30; })
+                .attr('transform', 'translate(0, -14)')
+                .attr('rx', '15')
+                .attr('ry', '15')
+                .attr('fill', myColor(i++))
+        writer_name.append('text')
+                .attr("dy", "0.31em")
+                .attr('fill', '#355d63')
+                .attr('transform', 'translate(15, 0)')
+                .text(d => { return d.data.name; });
+        
+        var writer_tags = writer.append('g')
+            .attr('class', 'writer_tags')
+        writer_tags.append('rect')
+            .attr('class', 'writer_tags')
+            .attr('height', '28')
+            .attr('width', d => { return d.data.tags.length * 13 + 30; })
+            .attr('transform', d => { 
+                var x = d.data.name.length * 13 + 40;
+                return 'translate(' + x + ', -14)';
+            })
+            .attr('rx', '15')
+            .attr('ry', '15')
+            .attr('fill', myColor(i++));
+        writer_tags.append('text')
+            .attr("dy", "0.31em")
+            .attr('transform', d => { 
+                var x = d.data.name.length * 13 + 55;
+                return 'translate(' + x + ', 0)';
+            })
+            .attr('fill', '#355d63')
+            .text(d => { return d.data.tags; });
+
+        var writer_works = writer.append('g')
+            .attr('class', 'writer_works')
+        writer_works.append('rect')
+            .attr('class', 'writer_works')
+            .attr('height', '28')
+            .attr('width', d => { return d.data.works.length * 13 + 56; })
+            .attr('transform', d => { 
+                var x = d.data.name.length * 13 + 80 + d.data.tags.length * 13;
+                return 'translate(' + x + ', -14)';
+            })
+            .attr('rx', '15')
+            .attr('ry', '15')
+            .attr('fill', myColor(i++));
+        writer_works.append('text')
+            .attr("dy", "0.31em")
+            .attr('transform', d => { 
+                var x = d.data.name.length * 13 + 95 + d.data.tags.length * 13;
+                return 'translate(' + x + ', 0)';
+            })
+            .attr('fill', '#355d63')
+            .text(d => { return "《" + d.data.works + "》"; });
+            
+
+        node.append('text')
+            .attr('x', d => d.y)
+            .attr('y', d => d.x)
+            .attr('dy', 3)
+            .text(d => { d.data.name });
+    </script>
+</body>
+
 </html>

@@ -28,7 +28,9 @@ def getRegionData(region):
     if request.method == 'GET':
         data = mydb.readPeriodData(ch_region)
         data = json.dumps(data, ensure_ascii=False)
-        return render_template('region.html', region=region, data=data)
+        writers = mydb.readWriterPerPeriod(ch_region)
+        writers = json.dumps(writers, ensure_ascii=False)
+        return render_template('region.html', region=region, ch_region=ch_region, data=data, words=writers)
     elif request.method == 'POST':
         period = str(request.get_data(), encoding='utf-8')
         return jsonify(dict(state=True, redirect=url_for('getPeriodData', region=region, period=period)))

@@ -113,6 +113,23 @@ def sortGenreData(r, p, g):
   return data
 
 
+def sortForWordCloud(d):
+  data = []
+  random.shuffle(d)
+  if len(d) <= 50:
+    for i in d:
+      data.append(i[0])
+      if i[1]:
+        data.append(i[1])
+  else:
+    for i in range(50):
+      data.append(d[i][0])
+      if d[i][1]:
+        data.append(d[i][1])
+  print(data)
+  return list(set(data))
+
+
 def readPeriodData(r):
   sql = "SELECT period, genre, writer, tags, works FROM regions \
       WHERE region = %s"
@@ -128,6 +145,15 @@ def readGenreData(r, p):
   genres = getGenres(r, p)
   sorted_data = sortGenreData(r, p, genres)
   return sorted_data
+
+
+def readWriterPerPeriod(r):
+  sql = "SELECT writer, works FROM regions \
+      WHERE region = %s"
+  mycursor.execute(sql, (r,))
+  data = mycursor.fetchall()
+  # print(data)
+  return sortForWordCloud(data)
 
 
 def closeDatabase():

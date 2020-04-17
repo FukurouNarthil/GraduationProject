@@ -2,11 +2,31 @@ html, body {
     margin: 0px;
     overflow: hidden;
     height: 100%;
-    background-color: #dce7fa;
+    background-color: #b9c9dc;
+    text-align: center;
 }
 
 
 /* 主页 */
+.header {
+    margin:0 auto;
+    color: #355d63;
+}
+
+.search_box input {
+    background: url(../static/search.png) no-repeat;
+    background-position: 3px;
+    background-color: white;
+    border-radius: 15px;
+    border: 1px solid white;
+    height: 26px;
+    width: 200px;
+    padding-left: 25px;
+    margin-right: -8px;
+    margin-top: -10px;
+    outline: none;
+}
+
 .map_box {
     height: 100%;
     /* background-color: #b1c9f0; */
@@ -15,17 +35,22 @@ html, body {
 .map {
     height:100%;
     width: 100%;
-    background-color: #dce7fa;
+    background-color: #b9c9dc;
+}
+
+.ocean {
+    font-size: 20px;
+    color: #44858f;
 }
 
 .country {
-    fill: #a6c4f5;
+    fill: #efedea;
     stroke: white;
-    stroke-width: 0.05px;
+    stroke-width: 0.5px;
 }
   
 .country:hover {
-    fill: #397ded;
+    fill: #decdc6;
     cursor: pointer;
 }
 
@@ -52,10 +77,8 @@ html, body {
     stroke: #397ded;
 }
 
-.node_region {
-    /* fill: white; */
-}
-
-.node_period {
-    /* fill: white; */
+.writer text {
+    font-size: small;
+    /* color: #35525A; */
+    color: white;
 }

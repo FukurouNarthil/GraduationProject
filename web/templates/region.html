@@ -7,11 +7,15 @@
 </head>
 
 <body>
+    <div class="header">
+        <h1>{{ch_region}}文学史</h1>
+    </div>
     <div class="tree_box">
         <!-- <script src="../static/home.js"></script> -->
     </div>
     <script src="../static/d3.js"></script>
     <script src="../static/d3.min.js"></script>
+    <script src="../static/d3.layout.cloud.js"></script>
     <script src="../static/topojson.min.js"></script>
     <script src="../static/jquery-3.4.1.min.js"></script>
     <script type="text/javascript">
@@ -20,14 +24,61 @@
             height = 721 - margin.top - margin.bottom;
         var radius = 200;
         var i = 0;
+        var j = 0;
 
         const svg = d3.select('.tree_box').append('svg')
                         .attr("class", "tree")
                         .attr("height", height + margin.top + margin.bottom)
                         .attr("width", width + margin.right + margin.left)
         var g = svg.append('g')
-                        .attr("transform", "translate(" + (width / 2 + 70) + "," + (height / 2 + 40) + ")");
+                        .attr("transform", "translate(" + (width / 1.75 - 10) + "," + (height / 2.5 + 40) + ")");
 
+
+        //********* 词云 **********//
+        var words = '{{ words }}'
+        var sorted_words = []
+        // console.log(words);
+        words = words.split('[')[1].split(']')[0].split(', ')
+        words.forEach(element => {
+            element = element.split('&#34;').join("");
+            sorted_words.push(element)
+        });
+        console.log(sorted_words)
+
+        var myColor_1 = d3.scaleLinear().domain([1, 10])
+                            .range(["#c5ced1", "#B6CFD5"]);
+        
+        var layout = d3.layout.cloud()
+            .size([1500, 700])
+            .words(sorted_words.map(function(d) {
+                return {text: d, size: 15 + Math.random() * 12};
+            }))
+            .rotate(-45)
+            .fontSize(function(d) { return d.size; })
+            .padding(5)  // 内间距
+            .font("Impact")
+            .on("end", draw);
+            
+        layout.start();
+        function draw(words) {
+            g.selectAll(".word")
+                    .data(words)
+                .enter().append("text")
+                    .attr('class', 'word')
+                    .style("font-size", function(d) { console.log(d); return d.size + "px"; })
+                    .style("font-family", "Impact")
+                    .style('opaque', '0.7')
+                    .attr("fill", myColor_1(j++))
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        // return "translate(" + [d.x, d.y] + ")";
+                    })
+                    .text(function(d) { return d.text; });
+        }
+
+
+        //********* 树 **********//
         var tree = d3.tree()
             .size([2 * Math.PI, radius])
             .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth)
@@ -63,6 +114,8 @@
         // node颜色渐变
         var myColor = d3.scaleLinear().domain([1, 10])
                             .range(["#B6CFD5", "#00272D"]);
+        var myColor_2 = d3.scaleLinear().domain([1, 10])
+                            .range(["#a8adaa", "#353836"]);
 
         var node = g.selectAll("node")
             .data(root.descendants())
@@ -82,13 +135,29 @@
             .attr("dy", "0.31em")
             .attr("x", function (d) { return d.x < Math.PI === !d.children ? 6 : -6; })
             .attr("text-anchor", function (d) { return d.x < Math.PI === !d.children ? "start" : "end"; })
+            .style("font-size", function(d) {
+                if(!d.depth) {
+                    return "24px";
+                } else {
+                    return "18px";
+                }
+            })
+            .style("font-family", "Microsoft YaHei")
+            .attr("fill", d => {
+                if(!d.depth) {
+                    return "#517e85";
+                } else {
+                    return myColor_2(i--);
+                }
+            })
             .attr("transform", function (d) { 
                     console.log(d);
                     if (!d.depth) {
-                        return "translate( -" + d.data.name.length * 10.5 + ", 0)";
+                        var x = d.data.name.length * 12 + 6
+                        return "translate( -" + x + ", 0)";
                     } else {
                         // console.log(d.x < Math.PI ? -30 : 30);
-                        var offset = d.x < Math.PI ? -30 : 30;
+                        var offset = d.x < Math.PI ? -d.data.name.length * 9 - 6 : d.data.name.length * 9 + 6;
                         return "translate( " + offset + ", 0)";
                     }
                     // return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; 
