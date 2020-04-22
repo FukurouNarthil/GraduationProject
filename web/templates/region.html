@@ -31,7 +31,7 @@
                         .attr("height", height + margin.top + margin.bottom)
                         .attr("width", width + margin.right + margin.left)
         var g = svg.append('g')
-                        .attr("transform", "translate(" + (width / 1.75 - 10) + "," + (height / 2.5 + 40) + ")");
+                        .attr("transform", "translate(" + (width / 1.75 + 5) + "," + (height / 2.5 + 40) + ")");
 
 
         //********* 词云 **********//
@@ -49,7 +49,7 @@
                             .range(["#c5ced1", "#B6CFD5"]);
         
         var layout = d3.layout.cloud()
-            .size([1500, 700])
+            .size([1300, 600])
             .words(sorted_words.map(function(d) {
                 return {text: d, size: 15 + Math.random() * 12};
             }))
@@ -130,6 +130,21 @@
                 .attr("y", -6)
                 .attr("r", 60)
                 .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
+        // node.append("rect")
+        //         .attr("class", function (d) { return "node" + (d.depth == 0 ? "_region" : "_period"); })
+        //         .attr("fill", function(d) { return d.depth == 0 ? "white" : myColor(i++); })
+        //         .attr('height', '80')
+        //         .attr('width', '240')
+        //         .attr("x", -6)
+        //         .attr("y", -6)
+        //         .attr('rx', '15')
+        //         .attr('ry', '15')
+        //         .attr("transform", function(d) { 
+        //             var x = d.x < Math.PI ? 0: -240;
+        //             return "translate(" + x + ", -40)"; 
+        //         })
+                // .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
+                // .attr('width', d => { return d.data.name.length * 18 + 40; })
             
         node.append("text")
             .attr("dy", "0.31em")
@@ -147,7 +162,7 @@
                 if(!d.depth) {
                     return "#517e85";
                 } else {
-                    return myColor_2(i--);
+                    return "#2c2e2c";
                 }
             })
             .attr("transform", function (d) { 
@@ -168,6 +183,23 @@
             .on("mouseover", handleMouseOver)
             .on("mouseout", handleMouseOut)
             .on("click", handleClick);
+        
+
+        g.append('g')
+            .attr('class', 'back')
+            .attr('transform', 'translate(600, 170)')
+        g.selectAll('.back').append('image')
+                .attr('xlink:href', '../static/back.png')
+                .attr('height', '50px')
+                .attr('width', '50px')
+                .attr('transform', 'translate(0, 10)')
+                .style('cursor', 'pointer')
+                .on('click', handleBack)
+        g.selectAll('.back').append('text')
+                .attr('transform', 'translate(-22, 80)')
+                .attr('fill', '#759ba1')
+                .style('font-size', '16px')
+                .text('返回上级页面')
             
 
         function radialPoint(x, y) {
@@ -200,6 +232,15 @@
                 },
                 error: function (error) {
                     console.log(error);
+                }
+            })
+        }
+
+        function handleBack(d, i) {
+            $.ajax({
+                url: '/',
+                success: function(response) {
+                    window.location.replace('/')
                 }
             })
         }

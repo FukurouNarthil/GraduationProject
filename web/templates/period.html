@@ -25,8 +25,16 @@
             .attr("class", "tree")
             .attr("height", height)
             .attr("width", width)
+        
+        // svg.selectAll('.s_header')
+        //     .append('text')
+        //     .attr('class', 's_header')
+        //     .attr('transform', 'translate(140, 20)')
+        //     .style('font-size', '28')
+        //     .text('{{ period }}')
+
         var g = svg.append('g')
-            .attr("transform", "translate(150, 0)");
+            .attr("transform", "translate(150, 30)");
 
         const ptree = d3.tree()
             .size([height, width * 0.5]);
@@ -77,20 +85,44 @@
         g.selectAll('.node--root').append('circle')
             .attr('transform', function (d) { return "translate(" + d.y + "," + d.x + ")"; })
             .attr('r', '2.5');
+        g.selectAll('.node--root').append('text')
+            .attr('transform', function (d) { 
+                    var x = d.y - 24
+                    var y = d.x - d.data.name.length *14
+                    return "translate(" + x + "," + y + ")"; 
+                })
+            .attr('fill', '#355d63')
+            .style('font-size', '28px')
+            .style('font-family', 'Impact')
+            .style('writing-mode', 'tb')
+            .text('{{ period }}')
+        
         g.selectAll('.node--genre').append('image')
             .attr('xlink:href', d => {
                 var name;
                 switch(d.data.name) {
-                    case '诗歌' || '赋' || '散曲':
+                    case '诗歌':
                         name = 'poetry';
                         break;
-                    case '小说' || '词':
+                    case '赋':
+                        name = 'fic';
+                        break;
+                    case '散曲':
+                        name = 'poetry';
+                        break;
+                    case '小说':
+                        name = 'fic';
+                        break;
+                    case '词':
                         name = 'fic';
                         break;
                     case '戏剧':
                         name = 'drama';
                         break;
-                    case '非虚构' || '散文':
+                    case '非虚构':
+                        name = 'nonfic';
+                        break;
+                    case '散文':
                         name = 'nonfic';
                         break;
                 }
@@ -100,6 +132,15 @@
                 y = d.x - 43;
                 return "translate(" + d.y + "," + y + ")"; 
             });
+            g.selectAll('.node--genre').append('text')
+                .style('font-size', '12px')
+                .attr('fill', '#587f85')
+                .attr('transform', function (d) { 
+                    y = d.x + 63;
+                    x = d.y + 43 - d.data.name.length * 6;
+                    return "translate(" + x + "," + y + ")"; 
+                })
+                .text(d => { return d.data.name; })
 
 
         var writer = g.selectAll('.node--writer').append('g')
@@ -174,6 +215,38 @@
             .attr('y', d => d.x)
             .attr('dy', 3)
             .text(d => { d.data.name });
+
+        node.append('g')
+            .attr('class', 'back')
+            .attr('transform', 'translate(1240, 560)')
+        node.selectAll('.back').append('image')
+                .attr('xlink:href', '../../static/back.png')
+                .attr('height', '40px')
+                .attr('width', '40px')
+                .attr('transform', 'translate(0, 10)')
+                .style('cursor', 'pointer')
+                .on('click', handleBack)
+        node.selectAll('.back').append('text')
+                .attr('transform', 'translate(-22, 80)')
+                .attr('fill', '#759ba1')
+                .style('font-size', '16px')
+                .text('返回上级页面')
+
+        function handleBack(d, i) {
+            $.ajax({
+                url: '/',
+                data: '{{ region }}',
+                type: 'POST',
+                success: function (response) {
+                    console.log(response)
+                    window.location.replace(response.redirect);
+                    console.log('succeed!')
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            })
+        }
     </script>
 </body>
 

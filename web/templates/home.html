@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <html>
     <head>
         <title>World Literature Map</title>
@@ -9,9 +10,8 @@
             <h1>世界文学史可视化信息库</h1>
         </div>
         <div class="search_box">
-            <form>
-                <input type="text" class="regionname" placeholder="搜索国家、地区"/>
-            </form>
+            <input id="search" class="regionname" placeholder="搜索国家、地区"/>
+            <button id="search_btn" style="display: none;" onclick="search()"></button>
         </div>
         <div class="map_box">
             <svg class="map">
@@ -24,5 +24,34 @@
         <script src="../static/topojson.min.js"></script>
         <script src="../static/jquery-3.4.1.min.js"></script>
         <script src="../static/bundle.js"></script>
+        <script>
+            var input = document.getElementById("search");
+            input.addEventListener("keyup", function(event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                    document.getElementById("search_btn").click();
+                }
+            });
+            function search() {
+                var data = document.getElementById("search").value;
+                $.ajax({
+                    url: '/',
+                    data: data,
+                    type: 'POST',
+                    success: function (response) {
+                        console.log(response)
+                        if(response.state) {
+                            window.location.replace(response.redirect);
+                        } else {
+                            alert('该地区不存在或数据暂缺')
+                        }
+                        console.log('succeed!')
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                })
+            }
+        </script>
     </body>
 </html>

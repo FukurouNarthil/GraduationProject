@@ -133,7 +133,7 @@ def sortForWordCloud(d):
 def readPeriodData(r):
   sql = "SELECT period, genre, writer, tags, works FROM regions \
       WHERE region = %s"
-  print(r)
+  # print(r)
   mycursor.execute(sql, (r,))
   data = mycursor.fetchall()
   sorted_data = sortPeriodData(r, data)
@@ -156,8 +156,21 @@ def readWriterPerPeriod(r):
   return sortForWordCloud(data)
 
 
-def closeDatabase():
-  mydb.close()
+def ifRegionExit(r):
+  sql = "select period from regions where region = %s"
+  mycursor.execute(sql, (r,))
+  data = mycursor.fetchall()
+  if data:
+    return True
+  else:
+    return False
+
+
+def is_contains_chinese(strs):
+    for _char in strs:
+        if '\u4e00' <= _char <= '\u9fa5':
+            return True
+    return False
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
 # encoding=utf-8
 
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify, flash
 from translator import translate
 import mydb
 import json
+import time
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.secret_key = 'random string'
 
 
 @app.route('/home')
@@ -19,7 +21,7 @@ def getPeriodData(region, period):
     ch_region = translate(region)
     data = mydb.readGenreData(ch_region, period)
     data = json.dumps(data, ensure_ascii=False)
-    return render_template('period.html', region=region, period=period, data=data)
+    return render_template('period.html', region=region, ch_region=ch_region, period=period, data=data)
 
 
 @app.route('/region/<region>', methods=['GET', 'POST'])
@@ -47,7 +49,13 @@ def getRegion():
     if request.method == 'POST':
         region = str(request.get_data(), encoding='utf-8')
         # print(region)
-        return jsonify(dict(state=True, redirect=url_for('getRegionData', region=region)))
+        if mydb.is_contains_chinese(region) == False:
+            ch_region = translate(region)
+        # print(region)
+        if mydb.ifRegionExit(ch_region):
+            return jsonify(dict(state=True, redirect=url_for('getRegionData', region=region)))
+        else:
+            return jsonify(dict(state=False))
 
 
 if __name__ == "__main__":
